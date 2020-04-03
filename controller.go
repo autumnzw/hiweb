@@ -1,0 +1,262 @@
+package tinyweb
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/go-playground/validator/v10"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+)
+
+type ControllerInterface interface {
+	Init(ctx *WebContext)
+	Query(key string, def ...interface{}) (interface{}, error)
+	ParseValid(obj interface{}, vs ...*validator.Validate) error
+}
+type Controller struct {
+	// context data
+	Ctx *WebContext
+}
+
+func (c *Controller) GetHeader(key string) string {
+	return c.Ctx.Request.Header.Get(key)
+}
+func (c *Controller) SetHeader(key, val string) {
+	c.Ctx.ResponseWriter.Header().Set(key, val)
+}
+
+func (c *Controller) GetBody() ([]byte, error) {
+	return ioutil.ReadAll(c.Ctx.Request.Body)
+}
+
+func (c *Controller) Input() url.Values {
+	if c.Ctx.Request.Form == nil {
+		err := c.Ctx.Request.ParseForm()
+		if err != nil {
+			WebConfig.Logger.Error(err)
+		}
+	}
+	return c.Ctx.Request.Form
+}
+
+func (c *Controller) Init(ctx *WebContext) {
+	c.Ctx = ctx
+}
+
+// ParseValid maps input data map to obj struct.include(form,json)
+func (c *Controller) ParseValid(obj interface{}, vs ...*validator.Validate) error {
+	var err error
+	contentType := c.GetHeader("Content-Type")
+	if strings.HasPrefix(contentType, "application/json") ||
+		strings.HasPrefix(contentType, "application/*+json") ||
+		strings.HasPrefix(contentType, "multipart/form-data") {
+		tBody, err := c.GetBody()
+		if err != nil {
+			return err
+		}
+		requestBody := bytes.TrimSpace(tBody)
+		if len(requestBody) != 0 && IsJSONBody(requestBody) {
+			err = json.Unmarshal(requestBody, obj)
+		} else {
+			err = ParseForm(c.Input(), obj)
+		}
+	} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
+		tBody, err := c.GetBody()
+		if err != nil {
+			return err
+		}
+		if len(tBody) != 0 {
+			u, err := url.ParseQuery(string(tBody))
+			if err != nil {
+				return err
+			}
+			err = ParseForm(u, obj)
+		}
+	} else {
+		err = ParseForm(c.Input(), obj)
+	}
+	if err != nil {
+		return err
+	}
+	if len(vs) > 0 {
+		for _, v := range vs {
+			err := v.Struct(obj)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// Param returns router param by a given key.
+func (c *Controller) Param(key string) string {
+	if v, has := c.Input()[key]; has {
+		return v[0]
+	}
+	return ""
+}
+
+// Param returns router param by a given key.
+func (c *Controller) Query(key string, def ...interface{}) (interface{}, error) {
+	if v := c.Param(key); v != "" {
+		return v, nil
+	}
+	if len(def) > 0 {
+		return def[0], nil
+	}
+	tBody, err := c.GetBody()
+	if err != nil {
+		return "", err
+	}
+	requestBody := bytes.TrimSpace(tBody)
+	contentType := c.GetHeader("Content-Type")
+	if strings.HasPrefix(contentType, "application/json") ||
+		strings.HasPrefix(contentType, "multipart/form-data") {
+		if len(requestBody) != 0 && IsJSONBody(requestBody) {
+			obj := make(map[string]interface{})
+			err := json.Unmarshal(requestBody, &obj)
+			if err != nil {
+				return "", nil
+			}
+			if v, has := obj[key]; has {
+				switch objVal := v.(type) {
+				case string:
+					return objVal, nil
+				case []string:
+					return objVal, nil
+				case int:
+					return objVal, nil
+				case float32:
+					return objVal, nil
+				}
+			} else {
+				return "", fmt.Errorf("not found:%s", key)
+			}
+		} else {
+			return "", nil
+		}
+	} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
+		if len(requestBody) != 0 {
+			u, err := url.ParseQuery(string(requestBody))
+			if err != nil {
+				return "", nil
+			}
+			if v, has := u[key]; has {
+				return v[0], nil
+			} else {
+				return "", nil
+			}
+		}
+	}
+	return "", nil
+}
+
+// GetString returns the input value by key string or the default value while it's present and input is blank
+func (c *Controller) GetString(key string, def ...string) (string, error) {
+	val, err := c.Query(key, def)
+	if err != nil {
+		return "", err
+	}
+	return val.(string), nil
+}
+
+// GetStrings returns the input string slice by key string or the default value while it's present and input is blank
+// it's designed for multi-value input field such as checkbox(input[type=checkbox]), multi-selection.
+func (c *Controller) GetStrings(key string, def ...[]string) ([]string, error) {
+	val, err := c.Query(key, def)
+	if err != nil {
+		return []string{}, err
+	}
+	return val.([]string), nil
+}
+
+// GetInt returns input as an int or the default value while it's present and input is blank
+func (c *Controller) GetInt(key string, def ...int) (int, error) {
+	val, err := c.Query(key, def)
+	if err != nil {
+		return -1, err
+	}
+	return val.(int), nil
+
+}
+
+// ParseCheck maps input data map to obj struct.include(form,json)
+func (c *Controller) ParseCheck(obj interface{}) error {
+	valid := validator.New()
+	err := c.ParseValid(obj, valid)
+	return err
+}
+
+func (c *Controller) Forbidden() {
+	c.Ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
+}
+func (c *Controller) InternalServerError() {
+	c.Ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+}
+func (c *Controller) NotFound() {
+	c.Ctx.ResponseWriter.WriteHeader(http.StatusNotFound)
+}
+
+func (c *Controller) ServeJSON(status int, obj interface{}) error {
+	return c.JSON(status, obj, true, false)
+}
+
+func (c *Controller) JSON(status int, data interface{}, hasIndent bool, coding bool) error {
+	c.SetHeader("Content-Type", "application/json; charset=utf-8")
+	var content []byte
+	var err error
+	if hasIndent {
+		content, err = json.MarshalIndent(data, "", "  ")
+	} else {
+		content, err = json.Marshal(data)
+	}
+	if err != nil {
+		http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	if coding {
+		content = []byte(stringsToJSON(string(content)))
+	}
+	return c.ServeBody(status, content)
+}
+
+func (c *Controller) ServeBody(status int, content []byte) error {
+	var encoding string
+	var buf = &bytes.Buffer{}
+	if WebConfig.EnableGzip {
+		encoding = ParseEncoding(c.Ctx.Request)
+	}
+	if b, n, _ := WriteBody(encoding, buf, content); b {
+		c.SetHeader("Content-Encoding", n)
+		c.SetHeader("Content-Length", strconv.Itoa(buf.Len()))
+	} else {
+		c.SetHeader("Content-Length", strconv.Itoa(len(content)))
+	}
+	// Write status code if it has been set manually
+	// Set it to 0 afterwards to prevent "multiple response.WriteHeader calls"
+	if status != 0 {
+		c.Ctx.ResponseWriter.WriteHeader(status)
+	}
+	_, err := io.Copy(c.Ctx.ResponseWriter, buf)
+	return err
+}
+
+func stringsToJSON(str string) string {
+	var jsons bytes.Buffer
+	for _, r := range str {
+		rint := int(r)
+		if rint < 128 {
+			jsons.WriteRune(r)
+		} else {
+			jsons.WriteString("\\u")
+			jsons.WriteString(strconv.FormatInt(int64(rint), 16))
+		}
+	}
+	return jsons.String()
+}
