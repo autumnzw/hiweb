@@ -169,7 +169,7 @@ func (g *Gen) Build(config *Config) error {
 		return err
 	}
 
-	docFileName := path.Join(config.OutputDir, "tinyweb.go")
+	docFileName := path.Join(config.OutputDir, "hiweb.go")
 	//jsonFileName := path.Join(config.OutputDir, "swagger.json")
 	//yamlFileName := path.Join(config.OutputDir, "swagger.yaml")
 
@@ -325,14 +325,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"webclient/tinyweb"
+	"github.com/autumnzw/hiweb"
 
 	"github.com/alecthomas/template"
 )
 
 func init(){
-	http.HandleFunc("/swag/", tinyweb.Handler(
-		tinyweb.URL("./swagger.json","{{.ProjectName}}"), //The url pointing to API definition"
+	http.HandleFunc("/swag/", hiweb.Handler(
+		hiweb.URL("./swagger.json","{{.ProjectName}}"), //The url pointing to API definition"
 	))
 }
 
@@ -369,11 +369,11 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	tinyweb.SwaggerRegister(&s{})
+	hiweb.SwaggerRegister(&s{})
 {{range $si,$vs := .Methods}}
 	{{$vs.LowerClass}} := {{$vs.Class}}{}
 {{range $i,$v := $vs.OutMethods}}
-	tinyweb.Route("{{$v.Route}}",&{{$vs.LowerClass}},"{{$v.ParamName}}","{{$v.Method}}",tinyweb.RouteOption{IsAuth:{{$v.IsAuth}}})	
+	hiweb.Route("{{$v.Route}}",&{{$vs.LowerClass}},"{{$v.ParamName}}","{{$v.Method}}",hiweb.RouteOption{IsAuth:{{$v.IsAuth}}})	
 {{end}}	
 {{end}}
 }
