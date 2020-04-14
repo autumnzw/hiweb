@@ -2,6 +2,8 @@ package webcmd
 
 import (
 	"fmt"
+	"go/format"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -41,4 +43,26 @@ func getTagName(tagValue string) string {
 	} else {
 		return ""
 	}
+}
+
+// PathExists
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+
+}
+
+// FormatSource
+func FormatSource(src []byte) []byte {
+	code, err := format.Source(src)
+	if err != nil {
+		code = src // Output the unformated code anyway
+	}
+	return code
 }

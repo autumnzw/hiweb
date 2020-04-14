@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"go/format"
 	"io"
 	"log"
 	"os"
@@ -46,6 +45,8 @@ type Config struct {
 
 	// OutputDir represents the output directory for all the generated files
 	OutputDir string
+
+	VueBaseUrl string
 
 	// MainAPIFile the Go file path in which 'swagger general API Info' is written
 	MainAPIFile string
@@ -201,6 +202,12 @@ func (g *Gen) Build(config *Config) error {
 	}
 
 	log.Printf("create docs.go at  %+v", docFileName)
+	if config.VueBaseUrl != "" {
+		apiDocFileName := path.Join(config.OutputDir, "..", "web", "src", "api", "api.js")
+		genVue(apiDocFileName, config.VueBaseUrl, swagger)
+		log.Printf("create api.js at  %+v", apiDocFileName)
+	}
+
 	//log.Printf("create swagger.json at  %+v", jsonFileName)
 	//log.Printf("create swagger.yaml at  %+v", yamlFileName)
 
@@ -216,14 +223,6 @@ func (g *Gen) writeFile(b []byte, file string) error {
 
 	_, err = f.Write(b)
 	return err
-}
-
-func (g *Gen) formatSource(src []byte) []byte {
-	code, err := format.Source(src)
-	if err != nil {
-		code = src // Output the unformated code anyway
-	}
-	return code
 }
 
 func (g *Gen) writeGoDoc(output io.Writer, swaggerSpec *SwaggerSpec, config *Config) error {
@@ -308,7 +307,7 @@ func (g *Gen) writeGoDoc(output io.Writer, swaggerSpec *SwaggerSpec, config *Con
 		return err
 	}
 
-	code := g.formatSource(buffer.Bytes())
+	code := FormatSource(buffer.Bytes())
 
 	// write
 	_, err = output.Write(code)
