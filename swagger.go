@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"regexp"
 	"sync"
-	"webclient/tinyweb/swaggerFiles"
+
+	"github.com/autumnzw/hiweb/swaggerFiles"
 )
 
 // WrapHandler wraps swaggerFiles.Handler and returns http.HandlerFunc
