@@ -1,4 +1,4 @@
-package tinyweb
+package hiweb
 
 import (
 	"github.com/dgrijalva/jwt-go"

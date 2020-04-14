@@ -1,4 +1,4 @@
-package tinyweb
+package hiweb
 
 type Config struct {
 	EnableGzip bool

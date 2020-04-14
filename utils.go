@@ -1,4 +1,4 @@
-package tinyweb
+package hiweb
 
 // IsJSONBody 判断body是否是json，只适用于web提交
 func IsJSONBody(boey []byte) bool {
