@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/doug-martin/goqu/v9 v9.8.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/spec v0.19.7
 	github.com/go-playground/validator/v10 v10.2.0
