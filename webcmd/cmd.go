@@ -8,13 +8,14 @@ package webcmd
 //	})
 //}
 
-func CreateRoute(searchDir string, projectName string, vueBaseUrl string) error {
+func CreateRoute(searchDir string, projectName string, vueBaseUrl string, vueOutputDir string) error {
 	config := &Config{
 		ProjectName:        projectName,
 		SearchDir:          searchDir,
 		MainAPIFile:        "./main.go",
 		OutputDir:          "./controllers",
 		VueBaseUrl:         vueBaseUrl,
+		VueOutputDir:       vueOutputDir,
 		PropNamingStrategy: "",
 	}
 	return NewGen().Build(config)

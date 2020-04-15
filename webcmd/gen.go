@@ -48,6 +48,8 @@ type Config struct {
 
 	VueBaseUrl string
 
+	VueOutputDir string
+
 	// MainAPIFile the Go file path in which 'swagger general API Info' is written
 	MainAPIFile string
 
@@ -112,6 +114,12 @@ type SwaggerRequestBody struct {
 type SwaggerSchemaRef struct {
 	Ref string `json:"$ref"`
 }
+
+func (s *SwaggerRequestBody) GetClassName() string {
+	cName := filepath.Base(s.Schema.Ref)
+	return cName
+}
+
 type SwaggerParameter struct {
 	Name        string        `json:"name"`
 	In          string        `json:"in"`
@@ -180,21 +188,6 @@ func (g *Gen) Build(config *Config) error {
 	}
 	defer docs.Close()
 
-	//err = g.writeFile(b, jsonFileName)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//y, err := g.jsonToYAML(b)
-	//if err != nil {
-	//	return fmt.Errorf("cannot covert json to yaml error: %s", err)
-	//}
-	//
-	//err = g.writeFile(y, yamlFileName)
-	//if err != nil {
-	//	return err
-	//}
-
 	// Write doc
 	err = g.writeGoDoc(docs, swagger, config)
 	if err != nil {
@@ -203,8 +196,14 @@ func (g *Gen) Build(config *Config) error {
 
 	log.Printf("create docs.go at  %+v", docFileName)
 	if config.VueBaseUrl != "" {
-		apiDocFileName := path.Join(config.OutputDir, "..", "web", "src", "api", "api.js")
-		genVue(apiDocFileName, config.VueBaseUrl, swagger)
+		apiDocFileName := config.VueOutputDir
+		if config.VueOutputDir == "" {
+			apiDocFileName = path.Join(config.OutputDir, "..", "web", "src", "api", "api.js")
+		}
+		err = genVue(apiDocFileName, config.VueBaseUrl, swagger)
+		if err != nil {
+			return err
+		}
 		log.Printf("create api.js at  %+v", apiDocFileName)
 	}
 

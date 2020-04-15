@@ -255,7 +255,7 @@ func (parser *Parser) visit(path string, f os.FileInfo, err error) error {
 	if err := parser.Skip(path, f); err != nil {
 		return err
 	}
-	if f.Name() == "tinyweb.go" {
+	if f.Name() == "hiweb.go" {
 		return nil
 	} else {
 		return parser.parseFile(path)
