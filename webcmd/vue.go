@@ -98,7 +98,19 @@ function GetLocalToken(){
   return ""
 }
 
-  
+function GetUserName(){
+	const token = window.localStorage.getItem('Token')
+	if(token) {
+		try{
+			const value=JSON.parse(token)
+			return value.user_name
+		}catch{
+			return "";
+		}
+	}
+	return ""
+}
+
 function AppendParam(url, name, value) {
   if (url && name) {
       name += '=';
@@ -113,7 +125,7 @@ function AppendParam(url, name, value) {
   }
   return url;
 }
-export {SetLocalToken,GetLocalToken,IsLogin,AppendParam,Xhr,InitUrl}
+export {SetLocalToken,GetLocalToken,GetUserName,IsLogin,AppendParam,Xhr,InitUrl}
 
 function handleError(error) {
   let errMsg;
