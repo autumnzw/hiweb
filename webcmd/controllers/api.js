@@ -102,7 +102,7 @@ function AppendParam(url, name, value) {
   }
   return url;
 }
-
+export {SetLocalToken,GetLocalToken,IsLogin,AppendParam,Xhr,InitUrl}
 
 function handleError(error) {
   let errMsg;
@@ -121,14 +121,14 @@ function handleError(error) {
 }
 
 
-function TokenGenToken(password,username){
+function TokenGenToken(username,password){
 
 	let tmpUrl = "TokenGenToken";
 
 	
-	tmpUrl = AppendParam(tmpUrl, 'password', password) 
-	
 	tmpUrl = AppendParam(tmpUrl, 'username', username) 
+	
+	tmpUrl = AppendParam(tmpUrl, 'password', password) 
 		
 
 	return Xhr({

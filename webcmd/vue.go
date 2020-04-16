@@ -113,7 +113,7 @@ function AppendParam(url, name, value) {
   }
   return url;
 }
-
+export {SetLocalToken,GetLocalToken,IsLogin,AppendParam,Xhr,InitUrl}
 
 function handleError(error) {
   let errMsg;
