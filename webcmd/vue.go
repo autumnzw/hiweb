@@ -53,12 +53,12 @@ function Xhr( {url, body = null, method = 'get'} ) {
   if(method == "get"){
     return http
       .get(baseUrl+url)
-      .then(response => response.data)
+      .then(response => response)
       .catch(handleError);
   }else if(method=="post"){
     return http
       .post(baseUrl+url,body)
-      .then(response => response.data)
+      .then(response => response)
       .catch(handleError);
   }else{
     throw new TypeError("not support method", method)
