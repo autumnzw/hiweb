@@ -146,7 +146,7 @@ function handleError(error) {
 {{range $i,$v := .Methods}}
 function {{$v.MethodName}}({{$v.ParamNames}}){
 
-	let tmpUrl = "{{$v.MethodName}}";
+	let tmpUrl = "/{{$v.MethodName}}";
 
 	{{range $is,$vs := $v.ParamList}}
 	tmpUrl = AppendParam(tmpUrl, '{{$vs}}', {{$vs}}) 

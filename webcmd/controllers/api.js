@@ -87,7 +87,19 @@ function GetLocalToken(){
   return ""
 }
 
-  
+function GetUserName(){
+	const token = window.localStorage.getItem('Token')
+	if(token) {
+		try{
+			const value=JSON.parse(token)
+			return value.user_name
+		}catch{
+			return "";
+		}
+	}
+	return ""
+}
+
 function AppendParam(url, name, value) {
   if (url && name) {
       name += '=';
@@ -102,7 +114,7 @@ function AppendParam(url, name, value) {
   }
   return url;
 }
-export {SetLocalToken,GetLocalToken,IsLogin,AppendParam,Xhr,InitUrl}
+export {SetLocalToken,GetLocalToken,GetUserName,IsLogin,AppendParam,Xhr,InitUrl}
 
 function handleError(error) {
   let errMsg;
@@ -112,7 +124,7 @@ function handleError(error) {
       }
       const body = error.json() || '';
       const err = body.error || JSON.stringify(body);
-      errMsg = "${error.status} - ${error.statusText || ''} ${err}";
+      errMsg = "${error.status} - ${error.statusText || ''} "+err;
   } else {
       errMsg = error.message ? error.message : error.toString();
   }
@@ -123,7 +135,7 @@ function handleError(error) {
 
 function TokenGenToken(username,password){
 
-	let tmpUrl = "TokenGenToken";
+	let tmpUrl = "/TokenGenToken";
 
 	
 	tmpUrl = AppendParam(tmpUrl, 'username', username) 
