@@ -18,7 +18,7 @@ import NProgress from 'nprogress'
 let http = axios.create({
   withCredentials: false,
   headers: {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+      'Content-Type': 'application/json;charset=UTF-8'
   },
 });
 
@@ -146,15 +146,26 @@ function handleError(error) {
 {{range $i,$v := .Methods}}
 function {{$v.MethodName}}({{$v.ParamNames}}){
 
-	let tmpUrl = "/{{$v.MethodName}}";
+	let tmpUrl = "{{$v.MethodPath}}";
 
-	{{range $is,$vs := $v.ParamList}}
-	tmpUrl = AppendParam(tmpUrl, '{{$vs}}', {{$vs}}) 
+	{{if eq  $v.MethodType "post"}}
+		let inparam={
+		{{range $is,$vs := $v.ParamList}}
+			"{{$vs}}":{{$vs}},
+		{{end}}
+		}
+	{{else}}
+		{{range $is,$vs := $v.ParamList}}
+		tmpUrl = AppendParam(tmpUrl, '{{$vs}}', {{$vs}}) 
+		{{end}}	
 	{{end}}	
-
+	
 	return Xhr({
 		url: tmpUrl,
 		method: '{{$v.MethodType}}',
+	{{if eq  $v.MethodType "post"}}
+		body:inparam,
+	{{end}}
 	}).then((data) => {
 		return data
 	})
@@ -169,6 +180,7 @@ export{ {{$v.MethodName}} }
 
 type VueFunction struct {
 	MethodName string
+	MethodPath string
 	ParamNames string
 	ParamList  []string
 	MethodType string
@@ -229,9 +241,10 @@ func genVue(apiDocFileName string, vueBaseUrl string, swaggerSpec *SwaggerSpec) 
 				isAuth = true
 			}
 			methodName := fmt.Sprintf("%s%s", actions[0], actions[1])
-
+			methodPath := fmt.Sprintf("/%s/%s", actions[0], actions[1])
 			outMethodList = append(outMethodList, VueFunction{
 				MethodName: methodName,
+				MethodPath: methodPath,
 				MethodType: tk,
 				ParamNames: strings.Join(paramNames, ","),
 				ParamList:  paramNames,

@@ -7,7 +7,7 @@ import NProgress from 'nprogress'
 let http = axios.create({
   withCredentials: false,
   headers: {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+      'Content-Type': 'application/json;charset=UTF-8'
   },
 });
 
@@ -135,17 +135,24 @@ function handleError(error) {
 
 function TokenGenToken(username,password){
 
-	let tmpUrl = "/TokenGenToken";
+	let tmpUrl = "/Token/GenToken";
 
 	
-	tmpUrl = AppendParam(tmpUrl, 'username', username) 
-	
-	tmpUrl = AppendParam(tmpUrl, 'password', password) 
+		let inparam={
 		
-
+			"username":username,
+		
+			"password":password,
+		
+		}
+		
+	
 	return Xhr({
 		url: tmpUrl,
 		method: 'post',
+	
+		body:inparam,
+	
 	}).then((data) => {
 		return data
 	})
