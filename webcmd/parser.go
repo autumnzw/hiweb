@@ -179,7 +179,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 							ss := getSwaggerSchema(paramTypeName)
 							desc := paramMap[name]
 							in := "path"
-							if paramLen == 1 && httpMethod == "get" {
+							if paramLen == 1 && httpMethod == "get" && name == "key" {
 								urlParam = "{" + name + "}"
 								in = "path"
 							} else {
