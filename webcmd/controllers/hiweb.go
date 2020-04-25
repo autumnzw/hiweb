@@ -68,6 +68,79 @@ var doc = `{
                 }
             }
         },
+        "/Service/Auth/Login": {
+            "post": {
+                "tags": [
+                    "Token"
+                ],
+                "summary": "",
+                "requestBody": {
+                    "content": {
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "application/json-patch+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        },
+        "/Token/Get/{key}": {
+            "get": {
+                "tags": [
+                    "Token"
+                ],
+                "summary": "",
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        },
         "/Token/Login": {
             "post": {
                 "tags": [
@@ -163,12 +236,14 @@ func (s *s) ReadDoc() string {
 func init() {
 	hiweb.SwaggerRegister(&s{})
 
-	auth := Auth{}
-
-	hiweb.Route("/Auth/Login", &auth, "", "post:Login", hiweb.RouteOption{IsAuth: false})
-
 	token := Token{}
 
+	hiweb.Route("/Service/Auth/Login", &token, "", "post:GenToken", hiweb.RouteOption{IsAuth: false})
+
+	hiweb.Route("/Auth/Login", &token, "", "post:Same", hiweb.RouteOption{IsAuth: false})
+
 	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
+
+	hiweb.Route("/Token/Get/", &token, "key", "get:Get", hiweb.RouteOption{IsAuth: false})
 
 }

@@ -17,7 +17,12 @@ func (t *Token) Login(userIn UserCredentials) {
 
 }
 
-//@httpPost /Auth/Login
+//@httpGet
+func (t *Token) Get(key string) {
+
+}
+
+//@httpPost /Service/Auth/Login
 func (t *Token) GenToken(userIn UserCredentials) {
 
 }

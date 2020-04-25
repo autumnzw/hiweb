@@ -2,9 +2,9 @@
 import BAPI from './bapi'
 
 
-function TokenLogin(username,password){
+function ServiceAuth(username,password){
 
-	let tmpUrl = "/Token/Login";
+	let tmpUrl = "/Service/Auth";
 
 	
 		let inparam={
@@ -53,10 +53,60 @@ function AuthLogin(username,password){
 	})
 
 }
+
+function TokenLogin(username,password){
+
+	let tmpUrl = "/Token/Login";
+
+	
+		let inparam={
+		
+			"username":username,
+		
+			"password":password,
+		
+		}
+		
+	
+	return BAPI.Xhr({
+		url: tmpUrl,
+		method: 'post',
+	
+		body:inparam,
+	
+	}).then((data) => {
+		return data
+	})
+
+}
+
+function TokenGet(key){
+
+	let tmpUrl = "/Token/Get";
+
+	
+		
+		tmpUrl = BAPI.AppendParam(tmpUrl, 'key', key) 
+			
+		
+	
+	return BAPI.Xhr({
+		url: tmpUrl,
+		method: 'get',
+	
+	}).then((data) => {
+		return data
+	})
+
+}
 	
 
 
-export{ TokenLogin }
+export{ ServiceAuth }
 
 export{ AuthLogin }
+
+export{ TokenLogin }
+
+export{ TokenGet }
 	

@@ -101,11 +101,12 @@ type SwaggerInfo struct {
 type SwaggerMethod struct {
 	Tags []string `json:"tags,omitempty"`
 
-	Summary     string                                   `json:"summary"`
-	Params      []SwaggerParameter                       `json:"parameters,omitempty"`
-	RequestBody map[string]map[string]SwaggerRequestBody `json:"requestBody,omitempty"`
-	Responses   map[string]SwaggerResponsesDescription   `json:"responses"`
-	Security    []map[string][]string                    `json:"security,omitempty"`
+	ProMethodName string                                   `json:"-"`
+	Summary       string                                   `json:"summary"`
+	Params        []SwaggerParameter                       `json:"parameters,omitempty"`
+	RequestBody   map[string]map[string]SwaggerRequestBody `json:"requestBody,omitempty"`
+	Responses     map[string]SwaggerResponsesDescription   `json:"responses"`
+	Security      []map[string][]string                    `json:"security,omitempty"`
 }
 
 type SwaggerRequestBody struct {
@@ -246,17 +247,17 @@ func (g *Gen) writeGoDoc(output io.Writer, swaggerSpec *SwaggerSpec, config *Con
 
 	outMethodMap := make(map[string]OutClass)
 	for k, vs := range swaggerSpec.Paths {
-		tactions := strings.Split(k, "/")
-		actions := make([]string, 0)
-		for _, ta := range tactions {
-			if ta == "" {
-				continue
-			}
-			actions = append(actions, ta)
-		}
-		mName := strings.TrimSpace(actions[1])
-		cName := strings.TrimSpace(actions[0])
-		lcName := firstLower(cName)
+		// tactions := strings.Split(k, "/")
+		// actions := make([]string, 0)
+		// for _, ta := range tactions {
+		// 	if ta == "" {
+		// 		continue
+		// 	}
+		// 	actions = append(actions, ta)
+		// }
+		// mName := strings.TrimSpace(actions[1])
+		// cName := strings.TrimSpace(actions[0])
+		// lcName := firstLower(cName)
 		for tk, tv := range vs {
 			paramNames := make([]string, 0)
 			for _, p := range tv.Params {
@@ -266,12 +267,17 @@ func (g *Gen) writeGoDoc(output io.Writer, swaggerSpec *SwaggerSpec, config *Con
 			if len(tv.Security) > 0 {
 				isAuth = true
 			}
-			route := ""
-			if len(actions) > 2 {
-				route = fmt.Sprintf("/%s/%s/", actions[0], actions[1])
-			} else {
-				route = fmt.Sprintf("/%s/%s", actions[0], actions[1])
+			cName := tv.Tags[0]
+			lcName := firstLower(cName)
+			route := k
+			if i := strings.Index(route, "{"); i > 0 {
+				route = route[:i]
 			}
+			// if len(actions) > 2 {
+			// 	route = fmt.Sprintf("/%s/%s/", actions[0], actions[1])
+			// } else {
+			// 	route = fmt.Sprintf("/%s/%s", actions[0], actions[1])
+			// }
 			var has bool
 			var outs OutClass
 			if outs, has = outMethodMap[cName]; !has {
@@ -279,7 +285,7 @@ func (g *Gen) writeGoDoc(output io.Writer, swaggerSpec *SwaggerSpec, config *Con
 			}
 			outs.OutMethods = append(outs.OutMethods, OutMethod{
 				Route:     route,
-				Method:    tk + ":" + mName,
+				Method:    tk + ":" + tv.ProMethodName,
 				ParamName: strings.Join(paramNames, ";"),
 				IsAuth:    isAuth,
 			})

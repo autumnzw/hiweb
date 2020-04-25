@@ -127,7 +127,8 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						"401": {"Unauthorized"},
 						"403": {"Forbidden"},
 					},
-					Security: []map[string][]string{},
+					ProMethodName: methodName,
+					Security:      []map[string][]string{},
 				}
 				var cm *SwaggerComponent
 				if parser.swagger.Components != nil {
