@@ -2,9 +2,35 @@
 import BAPI from './bapi'
 
 
-function TokenGenToken(username,password){
+function TokenLogin(username,password){
 
-	let tmpUrl = "/Token/GenToken";
+	let tmpUrl = "/Token/Login";
+
+	
+		let inparam={
+		
+			"username":username,
+		
+			"password":password,
+		
+		}
+		
+	
+	return BAPI.Xhr({
+		url: tmpUrl,
+		method: 'post',
+	
+		body:inparam,
+	
+	}).then((data) => {
+		return data
+	})
+
+}
+
+function AuthLogin(username,password){
+
+	let tmpUrl = "/Auth/Login";
 
 	
 		let inparam={
@@ -30,5 +56,7 @@ function TokenGenToken(username,password){
 	
 
 
-export{ TokenGenToken }
+export{ TokenLogin }
+
+export{ AuthLogin }
 	

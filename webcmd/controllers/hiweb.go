@@ -25,7 +25,50 @@ var doc = `{
         "version": "v1"
     },
     "paths": {
-        "/Token/GenToken": {
+        "/Auth/Login": {
+            "post": {
+                "tags": [
+                    "Token"
+                ],
+                "summary": "",
+                "requestBody": {
+                    "content": {
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "application/json-patch+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        },
+        "/Token/Login": {
             "post": {
                 "tags": [
                     "Token"
@@ -120,8 +163,12 @@ func (s *s) ReadDoc() string {
 func init() {
 	hiweb.SwaggerRegister(&s{})
 
+	auth := Auth{}
+
+	hiweb.Route("/Auth/Login", &auth, "", "post:Login", hiweb.RouteOption{IsAuth: false})
+
 	token := Token{}
 
-	hiweb.Route("/Token/GenToken", &token, "", "post:GenToken", hiweb.RouteOption{IsAuth: false})
+	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
 
 }

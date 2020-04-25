@@ -119,6 +119,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 				recvName := astDeclaration.Recv.List[0].Type.(*ast.StarExpr).X.(*ast.Ident).Name
 
 				httpMethod := "get"
+				route := ""
 				sm := SwaggerMethod{
 					Tags: []string{recvName},
 					Responses: map[string]SwaggerResponsesDescription{
@@ -154,6 +155,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						paramMap[p.Name] = p.Description
 					}
 					httpMethod = operation.HTTPMethod
+					route = operation.Path
 				}
 				urlParam := ""
 				sm.Params = make([]SwaggerParameter, 0)
@@ -217,14 +219,18 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 					}
 
 				}
-				route := ""
-				if len(urlParam) > 0 {
-					route = fmt.Sprintf("/%s/%s/%s", recvName, methodName, urlParam)
-				} else {
-					route = fmt.Sprintf("/%s/%s", recvName, methodName)
+				if route == "" {
+					if len(urlParam) > 0 {
+						route = fmt.Sprintf("/%s/%s/%s", recvName, methodName, urlParam)
+					} else {
+						route = fmt.Sprintf("/%s/%s", recvName, methodName)
+					}
 				}
+
 				if parser.swagger.Paths[route] == nil {
 					parser.swagger.Paths[route] = map[string]SwaggerMethod{}
+				} else {
+					return fmt.Errorf("err same route file:%s", fileName)
 				}
 				if hasAuth {
 					cm.SecuritySchemes = map[string]SwaggerComponentSecuritySchemes{

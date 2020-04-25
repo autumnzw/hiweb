@@ -13,6 +13,16 @@ type UserCredentials struct {
 }
 
 //@httpPost
+func (t *Token) Login(userIn UserCredentials) {
+
+}
+
+//@httpPost /Auth/Login
 func (t *Token) GenToken(userIn UserCredentials) {
+
+}
+
+//@httpPost /Auth/Login
+func (t *Token) Same(userIn UserCredentials) {
 
 }

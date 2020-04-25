@@ -69,20 +69,20 @@ func (operation *Operation) ParseComment(comment string, astFile *ast.File) erro
 	switch lowerAttribute {
 	case "@description":
 		operation.ParseDescriptionComment(lineRemainder)
-	case "@router":
-		err = operation.ParseRouterComment(lineRemainder)
+	// case "@router":
+	// 	err = operation.ParseRouterComment(lineRemainder)
 	case "@param":
 		err = operation.ParseParamComment(lineRemainder, astFile)
 	case "@auth":
 		err = operation.ParseAuthComment(lineRemainder)
 	case "@httpget":
-		err = operation.ParseHttpGetComment()
+		err = operation.ParseHttpGetComment(lineRemainder)
 	case "@httppost":
-		err = operation.ParseHttpPostComment()
+		err = operation.ParseHttpPostComment(lineRemainder)
 	case "@httpdelete":
-		err = operation.ParseHttpDeleteComment()
+		err = operation.ParseHttpDeleteComment(lineRemainder)
 	case "@httpput":
-		err = operation.ParseHttpPutComment()
+		err = operation.ParseHttpPutComment(lineRemainder)
 	default:
 		err = operation.ParseMetadata(attribute, lowerAttribute, lineRemainder)
 	}
@@ -385,23 +385,35 @@ func (operation *Operation) ParseAuthComment(commentLine string) error {
 	return nil
 }
 
-func (operation *Operation) ParseHttpGetComment() error {
+func (operation *Operation) ParseHttpGetComment(commentLine string) error {
 	operation.HTTPMethod = "get"
+	if strings.HasPrefix(commentLine, "/") {
+		operation.Path = commentLine
+	}
 	return nil
 }
 
-func (operation *Operation) ParseHttpPostComment() error {
+func (operation *Operation) ParseHttpPostComment(commentLine string) error {
 	operation.HTTPMethod = "post"
+	if strings.HasPrefix(commentLine, "/") {
+		operation.Path = commentLine
+	}
 	return nil
 }
 
-func (operation *Operation) ParseHttpDeleteComment() error {
+func (operation *Operation) ParseHttpDeleteComment(commentLine string) error {
 	operation.HTTPMethod = "delete"
+	if strings.HasPrefix(commentLine, "/") {
+		operation.Path = commentLine
+	}
 	return nil
 }
 
-func (operation *Operation) ParseHttpPutComment() error {
+func (operation *Operation) ParseHttpPutComment(commentLine string) error {
 	operation.HTTPMethod = "put"
+	if strings.HasPrefix(commentLine, "/") {
+		operation.Path = commentLine
+	}
 	return nil
 }
 
