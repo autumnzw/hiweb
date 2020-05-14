@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -246,6 +248,30 @@ func (c *Controller) ServeBody(status int, content []byte) error {
 	}
 	_, err := io.Copy(c.Ctx.ResponseWriter, buf)
 	return err
+}
+
+//Download
+func (c *Controller) Download(file string, filename ...string) {
+	// check get file error, file not found or other error.
+	if _, err := os.Stat(file); err != nil {
+		http.ServeFile(c.Ctx.ResponseWriter, c.Ctx.Request, file)
+		return
+	}
+
+	var fName string
+	if len(filename) > 0 && filename[0] != "" {
+		fName = filename[0]
+	} else {
+		fName = filepath.Base(file)
+	}
+	c.SetHeader("Content-Disposition", "attachment; filename="+url.QueryEscape(fName))
+	c.SetHeader("Content-Description", "File Transfer")
+	c.SetHeader("Content-Type", "application/octet-stream")
+	c.SetHeader("Content-Transfer-Encoding", "binary")
+	c.SetHeader("Expires", "0")
+	c.SetHeader("Cache-Control", "must-revalidate")
+	c.SetHeader("Pragma", "public")
+	http.ServeFile(c.Ctx.ResponseWriter, c.Ctx.Request, file)
 }
 
 func stringsToJSON(str string) string {
