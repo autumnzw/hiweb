@@ -199,7 +199,7 @@ func (g *Gen) Build(config *Config) error {
 	if config.VueBaseUrl != "" {
 		apiDocFileName := config.VueOutputDir
 		if config.VueOutputDir == "" {
-			apiDocFileName = path.Join(config.OutputDir, "..", "web", "src", "api", "api.js")
+			apiDocFileName = path.Join(config.OutputDir, "..", "..", "web", "src", "api", "api.js")
 		}
 		err = genVue(apiDocFileName, config.VueBaseUrl, swagger)
 		if err != nil {
