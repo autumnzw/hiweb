@@ -250,8 +250,8 @@ func (c *Controller) ServeBody(status int, content []byte) error {
 	return err
 }
 
-//Download
-func (c *Controller) Download(file string, filename ...string) {
+//ServeDownload
+func (c *Controller) ServeDownload(file string, filename ...string) {
 	// check get file error, file not found or other error.
 	if _, err := os.Stat(file); err != nil {
 		http.ServeFile(c.Ctx.ResponseWriter, c.Ctx.Request, file)
