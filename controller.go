@@ -274,6 +274,18 @@ func (c *Controller) ServeDownload(file string, filename ...string) {
 	http.ServeFile(c.Ctx.ResponseWriter, c.Ctx.Request, file)
 }
 
+// ServeDownloadContent下载文件
+func (c *Controller) ServeDownloadContent(status int, content []byte, fileName string) error{
+	c.SetHeader("Content-Disposition", "attachment; filename="+url.QueryEscape(fileName))
+	c.SetHeader("Content-Description", "File Transfer")
+	c.SetHeader("Content-Type", "application/octet-stream")
+	c.SetHeader("Content-Transfer-Encoding", "binary")
+	c.SetHeader("Expires", "0")
+	c.SetHeader("Cache-Control", "must-revalidate")
+	c.SetHeader("Pragma", "public")
+	return c.ServeBody(status,content)
+}
+
 func stringsToJSON(str string) string {
 	var jsons bytes.Buffer
 	for _, r := range str {
