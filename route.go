@@ -2,13 +2,14 @@ package hiweb
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/dgrijalva/jwt-go/request"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/request"
 )
 
 type RouteOption struct {
@@ -30,6 +31,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		headers.Set("Access-Control-Allow-Origin", "*")
 		headers.Set("Access-Control-Allow-Headers", "*")
 		headers.Set("Access-Control-Allow-Method", "*")
+		headers.Set("Access-Control-Expose-Headers", "Content-Disposition")
 		headers.Set("Access-Control-Allow-Credentials", "true")
 		if strings.ToLower(req.Method) == "options" {
 			writer.WriteHeader(http.StatusOK)
