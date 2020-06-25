@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/request"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -18,12 +20,14 @@ import (
 
 type ControllerInterface interface {
 	Init(ctx *WebContext)
+	CheckAuth() (bool, error)
 	Query(key string, def ...interface{}) (interface{}, error)
 	ParseValid(obj interface{}, vs ...*validator.Validate) error
 }
 type Controller struct {
 	// context data
-	Ctx *WebContext
+	Ctx    *WebContext
+	Claims *jwt.MapClaims
 }
 
 func (c *Controller) GetHeader(key string) string {
@@ -49,6 +53,25 @@ func (c *Controller) Input() url.Values {
 
 func (c *Controller) Init(ctx *WebContext) {
 	c.Ctx = ctx
+}
+
+func (c *Controller) CheckAuth() (bool, error) {
+	token, err := request.ParseFromRequest(c.Ctx.Request, request.AuthorizationHeaderExtractor,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(WebConfig.SecretKey), nil
+		})
+	if err == nil {
+		if token.Valid {
+			if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+				c.Claims = claims
+			}
+			return true, nil
+		} else {
+			return false, fmt.Errorf("Token is not valid")
+		}
+	} else {
+		return false, fmt.Errorf("Unauthorized access to this resource")
+	}
 }
 
 // ParseValid maps input data map to obj struct.include(form,json)
@@ -275,7 +298,7 @@ func (c *Controller) ServeDownload(file string, filename ...string) {
 }
 
 // ServeDownloadContent下载文件
-func (c *Controller) ServeDownloadContent(status int, content []byte, fileName string) error{
+func (c *Controller) ServeDownloadContent(status int, content []byte, fileName string) error {
 	c.SetHeader("Content-Disposition", "attachment; filename="+url.QueryEscape(fileName))
 	c.SetHeader("Content-Description", "File Transfer")
 	c.SetHeader("Content-Type", "application/octet-stream")
@@ -283,7 +306,7 @@ func (c *Controller) ServeDownloadContent(status int, content []byte, fileName s
 	c.SetHeader("Expires", "0")
 	c.SetHeader("Cache-Control", "must-revalidate")
 	c.SetHeader("Pragma", "public")
-	return c.ServeBody(status,content)
+	return c.ServeBody(status, content)
 }
 
 func stringsToJSON(str string) string {

@@ -42,25 +42,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 			fmt.Fprint(writer, "not found")
 			return
 		}
-		if option.IsAuth {
-			token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor,
-				func(token *jwt.Token) (interface{}, error) {
-					return []byte(WebConfig.SecretKey), nil
-				})
-			if err == nil {
-				if token.Valid {
 
-				} else {
-					writer.WriteHeader(http.StatusUnauthorized)
-					fmt.Fprint(writer, "Token is not valid")
-					return
-				}
-			} else {
-				writer.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprint(writer, "Unauthorized access to this resource")
-				return
-			}
-		}
 		vc := reflect.New(t.Elem())
 		execController, ok := vc.Interface().(ControllerInterface)
 		if !ok {
@@ -68,6 +50,15 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		}
 		context := WebContext{req, writer}
 		execController.Init(&context)
+		if option.IsAuth {
+			if valid, err := execController.CheckAuth(); err != nil && !valid {
+				writer.WriteHeader(http.StatusUnauthorized)
+				fmt.Fprint(writer, err.Error())
+				return
+			}
+
+		}
+
 		m := vc.MethodByName(funcMethod)
 		paramLen := m.Type().NumIn()
 		var parameters []reflect.Value

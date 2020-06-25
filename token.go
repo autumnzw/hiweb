@@ -20,20 +20,6 @@ func JwtToken(infos map[string]interface{}) (string, error) {
 	return token.SignedString([]byte(WebConfig.SecretKey))
 }
 
-func JwtClaims(tokenString string) (*jwt.MapClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(WebConfig.SecretKey), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
-		return claims, nil
-	} else {
-		return nil, fmt.Errorf("convert map claims err")
-	}
-}
-
 var Session *sync.Map
 
 type sessionInfo struct {
