@@ -27,7 +27,7 @@ type ControllerInterface interface {
 type Controller struct {
 	// context data
 	Ctx    *WebContext
-	Claims *jwt.MapClaims
+	Claims jwt.MapClaims
 }
 
 func (c *Controller) GetHeader(key string) string {
@@ -62,7 +62,7 @@ func (c *Controller) CheckAuth() (bool, error) {
 		})
 	if err == nil {
 		if token.Valid {
-			if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+			if claims, ok := token.Claims.(jwt.MapClaims); ok {
 				c.Claims = claims
 			}
 			return true, nil
@@ -71,6 +71,14 @@ func (c *Controller) CheckAuth() (bool, error) {
 		}
 	} else {
 		return false, fmt.Errorf("Unauthorized access to this resource")
+	}
+}
+
+func (c *Controller) GetClaim(key string) interface{} {
+	if v, h := c.Claims[key]; h {
+		return v
+	} else {
+		return nil
 	}
 }
 
