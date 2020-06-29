@@ -54,9 +54,12 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 			if valid, err := execController.CheckAuth(); err != nil && !valid {
 				writer.WriteHeader(http.StatusUnauthorized)
 				fmt.Fprint(writer, err.Error())
+				WebConfig.Logger.Error("no auth url:%s", req.RequestURI)
 				return
 			}
-
+			WebConfig.Logger.Info("auth url:%s ", req.RequestURI)
+		} else {
+			WebConfig.Logger.Info("url:%s ", req.RequestURI)
 		}
 
 		m := vc.MethodByName(funcMethod)
