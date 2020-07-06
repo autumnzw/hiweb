@@ -1,10 +1,11 @@
 package hiweb
 
 type Config struct {
-	EnableGzip bool
-	SecretKey  string
-	Logger     Logger
-	paramMap   map[string]interface{}
+	EnableGzip  bool
+	SecretKey   string
+	Logger      Logger
+	AuthHandler func(context WebContext) error
+	paramMap    map[string]interface{}
 }
 
 var WebConfig Config
@@ -13,6 +14,7 @@ func init() {
 	WebConfig.SecretKey = "asdfsadfwexczv asfwe"
 	WebConfig.EnableGzip = true
 	WebConfig.Logger = &DefaultLogger{}
+	WebConfig.AuthHandler = nil
 	WebConfig.paramMap = make(map[string]interface{})
 }
 

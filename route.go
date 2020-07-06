@@ -51,11 +51,20 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		context := WebContext{req, writer}
 		execController.Init(&context)
 		if option.IsAuth {
-			if valid, err := execController.CheckAuth(); err != nil && !valid {
-				writer.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprint(writer, err.Error())
-				WebConfig.Logger.Error("no auth url:%s", req.RequestURI)
-				return
+			if WebConfig.AuthHandler != nil {
+				if err := WebConfig.AuthHandler(context); err != nil {
+					writer.WriteHeader(http.StatusUnauthorized)
+					fmt.Fprint(writer, err.Error())
+					WebConfig.Logger.Error("no auth url:%s", req.RequestURI)
+					return
+				}
+			} else {
+				if valid, err := execController.CheckAuth(); err != nil && !valid {
+					writer.WriteHeader(http.StatusUnauthorized)
+					fmt.Fprint(writer, err.Error())
+					WebConfig.Logger.Error("no auth url:%s", req.RequestURI)
+					return
+				}
 			}
 			WebConfig.Logger.Info("auth url:%s ", req.RequestURI)
 		} else {
