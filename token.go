@@ -27,18 +27,19 @@ type sessionInfo struct {
 	info       map[string]interface{}
 }
 
-func InitSession() {
+//InitSession 删除session时间按秒记
+func InitSession(deleteTime int64) { //60*60 //1小时删除
 	Session = &sync.Map{}
 
 	go func() {
 		for true {
 			Session.Range(func(sid, value interface{}) bool {
-				if value.(sessionInfo).createTime.Unix()+60*60 < time.Now().Unix() { //1小时删除
+				if value.(sessionInfo).createTime.Unix()+deleteTime < time.Now().Unix() {
 					Session.Delete(sid)
 				}
 				return true
 			})
-			time.Sleep(15 * time.Minute)
+			time.Sleep(10 * time.Minute)
 		}
 	}()
 }
