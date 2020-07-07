@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -27,6 +28,11 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		isUrlParam = true
 	}
 	http.HandleFunc(rootpath, func(writer http.ResponseWriter, req *http.Request) {
+		defer func() {
+			if e := recover(); e != nil {
+				WebConfig.Logger.Error("recover err:%s stack:%s", e, debug.Stack())
+			}
+		}()
 		headers := writer.Header()
 		headers.Set("Access-Control-Allow-Origin", "*")
 		headers.Set("Access-Control-Allow-Headers", "*")
