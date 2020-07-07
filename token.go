@@ -33,12 +33,12 @@ func InitSession() {
 	go func() {
 		for true {
 			Session.Range(func(sid, value interface{}) bool {
-				if value.(sessionInfo).createTime.Unix()+30*60*1000 < time.Now().Unix() {
+				if value.(sessionInfo).createTime.Unix()+60*60 < time.Now().Unix() { //1小时删除
 					Session.Delete(sid)
 				}
 				return true
 			})
-			time.Sleep(time.Duration(3600) * time.Second)
+			time.Sleep(15 * time.Minute)
 		}
 	}()
 }
