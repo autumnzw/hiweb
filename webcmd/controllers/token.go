@@ -31,3 +31,8 @@ func (t *Token) GenToken(userIn UserCredentials) {
 func (t *Token) Same(userIn UserCredentials) {
 
 }
+
+//@upload file aa
+func (t *Token) Upload() {
+
+}

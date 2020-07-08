@@ -104,6 +104,8 @@ func getSwaggerSchema(typeName string) SwaggerSchema {
 	case "int":
 		ss.Type = "integer"
 		ss.Format = "int32"
+	case "file":
+		ss.Type = "file"
 	}
 	return ss
 }
@@ -138,7 +140,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						Schema: map[string]SwaggerComponentStruct{},
 					}
 				}
-				paramMap := make(map[string]string)
+				paramMap := make(map[string]SwaggerParameter)
 				if astDeclaration.Doc != nil && astDeclaration.Doc.List != nil {
 					operation := NewOperation() //for per 'function' comment, create a new 'Operation' object
 					operation.parser = parser
@@ -153,7 +155,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						hasAuth = true
 					}
 					for _, p := range operation.Params {
-						paramMap[p.Name] = p.Description
+						paramMap[p.Name] = p
 					}
 					httpMethod = operation.HTTPMethod
 					route = operation.Path
@@ -162,6 +164,20 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 				sm.Params = make([]SwaggerParameter, 0)
 				sm.RequestBody = make(map[string]map[string]SwaggerRequestBody)
 				paramLen := 0
+				//添加上传注释
+				for _, v := range paramMap {
+					if v.In == "formData" {
+						ss := getSwaggerSchema("file")
+						sm.Params = append(sm.Params, SwaggerParameter{
+							Name:        v.Name,
+							Schema:      ss,
+							In:          v.In,
+							Required:    true,
+							Description: v.Description,
+						})
+					}
+				}
+				//参数中添加
 				for _, param := range astDeclaration.Type.Params.List {
 					paramLen += len(param.Names)
 				}
@@ -180,21 +196,20 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						paramTypeName := typeObj.Name
 						if typeObj.Obj == nil {
 							ss := getSwaggerSchema(paramTypeName)
-							desc := paramMap[name]
-							in := "path"
+							sp := paramMap[name]
+							in := "query"
 							if paramLen == 1 && httpMethod == "get" && name == "key" {
 								urlParam = "{" + name + "}"
 								in = "path"
 							} else {
 								in = "query"
-
 							}
 
 							sm.Params = append(sm.Params, SwaggerParameter{
 								Name:        name,
 								Schema:      ss,
 								In:          in,
-								Description: desc,
+								Description: sp.Description,
 							})
 						} else {
 							refObjName := fmt.Sprintf("#/components/schemas/%s", paramTypeName)

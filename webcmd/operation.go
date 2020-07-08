@@ -72,7 +72,7 @@ func (operation *Operation) ParseComment(comment string, astFile *ast.File) erro
 	// case "@router":
 	// 	err = operation.ParseRouterComment(lineRemainder)
 	case "@param":
-		err = operation.ParseParamComment(lineRemainder, astFile)
+		err = operation.ParseParamComment(lineRemainder, "query", astFile)
 	case "@auth":
 		err = operation.ParseAuthComment(lineRemainder)
 	case "@httpget":
@@ -83,6 +83,8 @@ func (operation *Operation) ParseComment(comment string, astFile *ast.File) erro
 		err = operation.ParseHttpDeleteComment(lineRemainder)
 	case "@httpput":
 		err = operation.ParseHttpPutComment(lineRemainder)
+	case "@upload":
+		err = operation.ParseParamComment(lineRemainder, "formData", astFile)
 	default:
 		err = operation.ParseMetadata(attribute, lowerAttribute, lineRemainder)
 	}
@@ -122,7 +124,7 @@ var paramPattern = regexp.MustCompile(`(\S+)[\s]+([\w]+)[\s]+([\S.]+)[\s]+([\w]+
 // E.g. @Param	queryText		formData	      string	  true		        "The email for login"
 //              [param name]    [paramType] [data type]  [is mandatory?]   [Comment]
 // E.g. @Param   some_id     path    int     true        "Some ID"
-func (operation *Operation) ParseParamComment(commentLine string, astFile *ast.File) error {
+func (operation *Operation) ParseParamComment(commentLine string, inType string, astFile *ast.File) error {
 	matches := strings.SplitN(commentLine, " ", 2)
 	if len(matches) < 2 {
 		return fmt.Errorf("param len is min 2:%s", commentLine)
@@ -130,6 +132,7 @@ func (operation *Operation) ParseParamComment(commentLine string, astFile *ast.F
 	operation.Params = append(operation.Params, SwaggerParameter{
 		Name:        matches[0],
 		Description: matches[1],
+		In:          inType,
 	})
 	return nil
 }
