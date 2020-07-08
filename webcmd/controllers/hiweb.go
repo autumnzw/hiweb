@@ -196,8 +196,10 @@ var doc = `{
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "type": "string",
-                                    "format": "binary"
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
                                 }
                             }
                         }
@@ -270,14 +272,14 @@ func init() {
 
 	token := Token{}
 
+	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
+
+	hiweb.Route("/Token/Get/", &token, "key", "get:Get", hiweb.RouteOption{IsAuth: false})
+
 	hiweb.Route("/Service/Auth/Login", &token, "", "post:GenToken", hiweb.RouteOption{IsAuth: false})
 
 	hiweb.Route("/Auth/Login", &token, "", "post:Same", hiweb.RouteOption{IsAuth: false})
 
 	hiweb.Route("/Token/Upload", &token, "", "get:Upload", hiweb.RouteOption{IsAuth: false})
-
-	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
-
-	hiweb.Route("/Token/Get/", &token, "key", "get:Get", hiweb.RouteOption{IsAuth: false})
 
 }

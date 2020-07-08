@@ -170,7 +170,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						sm.RequestBody["content"] = make(map[string]SwaggerRequestBody)
 						sm.RequestBody["content"]["multipart/form-data"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{
 							Type:       "object",
-							Properties: &SwaggerSchema{Type: "string", Format: "binary"},
+							Properties: map[string]SwaggerSchema{v.Name: {Type: "string", Format: "binary"}},
 						}}
 					}
 				}

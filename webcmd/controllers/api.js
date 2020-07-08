@@ -48,16 +48,16 @@ function TokenGet(key){
 
 }
 
-function ServiceAuth(password,username){
+function ServiceAuth(username,password){
 
 	let tmpUrl = "/Service/Auth";
 
 	
 		let inparam={
 		
-			"password":password,
-		
 			"username":username,
+		
+			"password":password,
 		
 		}
 		

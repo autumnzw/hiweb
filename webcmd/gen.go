@@ -113,9 +113,9 @@ type SwaggerRequestBody struct {
 	Schema SwaggerSchemaRef `json:"schema"`
 }
 type SwaggerSchemaRef struct {
-	Ref        string         `json:"$ref,omitempty"`
-	Type       string         `json:"type,omitempty"`
-	Properties *SwaggerSchema `json:"properties,omitempty"`
+	Ref        string                   `json:"$ref,omitempty"`
+	Type       string                   `json:"type,omitempty"`
+	Properties map[string]SwaggerSchema `json:"properties,omitempty"`
 }
 
 func (s *SwaggerRequestBody) GetClassName() string {
