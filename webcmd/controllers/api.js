@@ -2,52 +2,6 @@
 import BAPI from './bapi'
 
 
-function AuthLogin(password,username){
-
-	let tmpUrl = "/Auth/Login";
-
-	
-		let inparam={
-		
-			"password":password,
-		
-			"username":username,
-		
-		}
-		
-	
-	return BAPI.Xhr({
-		url: tmpUrl,
-		method: 'post',
-	
-		body:inparam,
-	
-	}).then((data) => {
-		return data
-	})
-
-}
-
-function TokenUpload(file){
-
-	let tmpUrl = "/Token/Upload";
-
-	
-		
-		tmpUrl = BAPI.AppendParam(tmpUrl, 'file', file) 
-			
-		
-	
-	return BAPI.Xhr({
-		url: tmpUrl,
-		method: 'get',
-	
-	}).then((data) => {
-		return data
-	})
-
-}
-
 function TokenLogin(username,password){
 
 	let tmpUrl = "/Token/Login";
@@ -94,9 +48,35 @@ function TokenGet(key){
 
 }
 
-function ServiceAuth(username,password){
+function ServiceAuth(password,username){
 
 	let tmpUrl = "/Service/Auth";
+
+	
+		let inparam={
+		
+			"password":password,
+		
+			"username":username,
+		
+		}
+		
+	
+	return BAPI.Xhr({
+		url: tmpUrl,
+		method: 'post',
+	
+		body:inparam,
+	
+	}).then((data) => {
+		return data
+	})
+
+}
+
+function AuthLogin(username,password){
+
+	let tmpUrl = "/Auth/Login";
 
 	
 		let inparam={
@@ -119,16 +99,34 @@ function ServiceAuth(username,password){
 	})
 
 }
+
+function TokenUpload(){
+
+	let tmpUrl = "/Token/Upload";
+
+	
+			
+		
+	
+	return BAPI.Xhr({
+		url: tmpUrl,
+		method: 'get',
+	
+	}).then((data) => {
+		return data
+	})
+
+}
 	
 
-
-export{ AuthLogin }
-
-export{ TokenUpload }
 
 export{ TokenLogin }
 
 export{ TokenGet }
 
 export{ ServiceAuth }
+
+export{ AuthLogin }
+
+export{ TokenUpload }
 	

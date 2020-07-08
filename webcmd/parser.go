@@ -167,14 +167,11 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 				//添加上传注释
 				for _, v := range paramMap {
 					if v.In == "formData" {
-						ss := getSwaggerSchema("file")
-						sm.Params = append(sm.Params, SwaggerParameter{
-							Name:        v.Name,
-							Schema:      ss,
-							In:          v.In,
-							Required:    true,
-							Description: v.Description,
-						})
+						sm.RequestBody["content"] = make(map[string]SwaggerRequestBody)
+						sm.RequestBody["content"]["multipart/form-data"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{
+							Type:       "object",
+							Properties: &SwaggerSchema{Type: "string", Format: "binary"},
+						}}
 					}
 				}
 				//参数中添加
@@ -214,10 +211,10 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						} else {
 							refObjName := fmt.Sprintf("#/components/schemas/%s", paramTypeName)
 							sm.RequestBody["content"] = make(map[string]SwaggerRequestBody)
-							sm.RequestBody["content"]["application/json-patch+json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{refObjName}}
-							sm.RequestBody["content"]["application/json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{refObjName}}
-							sm.RequestBody["content"]["text/json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{refObjName}}
-							sm.RequestBody["content"]["application/*+json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{refObjName}}
+							sm.RequestBody["content"]["application/json-patch+json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{Ref: refObjName}}
+							sm.RequestBody["content"]["application/json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{Ref: refObjName}}
+							sm.RequestBody["content"]["text/json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{Ref: refObjName}}
+							sm.RequestBody["content"]["application/*+json"] = SwaggerRequestBody{Schema: SwaggerSchemaRef{Ref: refObjName}}
 
 							prop := map[string]SwaggerSchema{}
 							for _, f := range typeObj.Obj.Decl.(*ast.TypeSpec).Type.(*ast.StructType).Fields.List {

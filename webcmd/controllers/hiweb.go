@@ -190,17 +190,19 @@ var doc = `{
                     "Token"
                 ],
                 "summary": "",
-                "parameters": [
-                    {
-                        "name": "file",
-                        "in": "formData",
-                        "description": "aa",
-                        "required": true,
-                        "schema": {
-                            "type": "file"
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
                         }
                     }
-                ],
+                },
                 "responses": {
                     "200": {
                         "description": "Success"
@@ -268,14 +270,14 @@ func init() {
 
 	token := Token{}
 
-	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
-
-	hiweb.Route("/Token/Get/", &token, "key", "get:Get", hiweb.RouteOption{IsAuth: false})
-
 	hiweb.Route("/Service/Auth/Login", &token, "", "post:GenToken", hiweb.RouteOption{IsAuth: false})
 
 	hiweb.Route("/Auth/Login", &token, "", "post:Same", hiweb.RouteOption{IsAuth: false})
 
-	hiweb.Route("/Token/Upload", &token, "file", "get:Upload", hiweb.RouteOption{IsAuth: false})
+	hiweb.Route("/Token/Upload", &token, "", "get:Upload", hiweb.RouteOption{IsAuth: false})
+
+	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
+
+	hiweb.Route("/Token/Get/", &token, "key", "get:Get", hiweb.RouteOption{IsAuth: false})
 
 }
