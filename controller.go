@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/dgrijalva/jwt-go/request"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +12,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/request"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -28,6 +29,7 @@ type Controller struct {
 	// context data
 	Ctx    *WebContext
 	Claims jwt.MapClaims
+	Body   []byte
 }
 
 func (c *Controller) GetHeader(key string) string {
@@ -38,7 +40,14 @@ func (c *Controller) SetHeader(key, val string) {
 }
 
 func (c *Controller) GetBody() ([]byte, error) {
-	return ioutil.ReadAll(c.Ctx.Request.Body)
+	if len(c.Body) == 0 {
+		body, err := ioutil.ReadAll(c.Ctx.Request.Body)
+		if err != nil {
+			return body, err
+		}
+		c.Body = body
+	}
+	return c.Body, nil
 }
 
 func (c *Controller) Input() url.Values {
