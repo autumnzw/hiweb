@@ -27,9 +27,10 @@ type ControllerInterface interface {
 }
 type Controller struct {
 	// context data
-	Ctx    *WebContext
-	Claims jwt.MapClaims
-	Body   []byte
+	Ctx       *WebContext
+	Claims    jwt.MapClaims
+	Body      []byte
+	JsonParam map[string]interface{}
 }
 
 func (c *Controller) GetHeader(key string) string {
@@ -145,6 +146,28 @@ func (c *Controller) Param(key string) string {
 	return ""
 }
 
+func (c *Controller) ParseJson() error {
+	if c.JsonParam == nil {
+		c.JsonParam = make(map[string]interface{})
+		tBody, err := c.GetBody()
+		if err != nil {
+			return err
+		}
+		requestBody := bytes.TrimSpace(tBody)
+		if len(requestBody) != 0 && IsJSONBody(requestBody) {
+			obj := make(map[string]interface{})
+			err := json.Unmarshal(requestBody, &obj)
+			if err != nil {
+				return err
+			}
+			for k, v := range obj {
+				c.JsonParam[k] = v
+			}
+		}
+	}
+	return nil
+}
+
 // Param returns router param by a given key.
 func (c *Controller) Query(key string, def ...interface{}) (interface{}, error) {
 	if v := c.Param(key); v != "" {
@@ -153,38 +176,33 @@ func (c *Controller) Query(key string, def ...interface{}) (interface{}, error) 
 	if len(def) > 0 {
 		return def[0], nil
 	}
-	tBody, err := c.GetBody()
-	if err != nil {
-		return "", err
-	}
-	requestBody := bytes.TrimSpace(tBody)
+
 	contentType := c.GetHeader("Content-Type")
-	if strings.HasPrefix(contentType, "application/json") ||
-		strings.HasPrefix(contentType, "multipart/form-data") {
-		if len(requestBody) != 0 && IsJSONBody(requestBody) {
-			obj := make(map[string]interface{})
-			err := json.Unmarshal(requestBody, &obj)
-			if err != nil {
-				return "", nil
-			}
-			if v, has := obj[key]; has {
-				switch objVal := v.(type) {
-				case string:
-					return objVal, nil
-				case []string:
-					return objVal, nil
-				case int:
-					return objVal, nil
-				case float32:
-					return objVal, nil
-				}
-			} else {
-				return "", fmt.Errorf("not found:%s", key)
-			}
-		} else {
-			return "", nil
+	if strings.HasPrefix(contentType, "application/json") {
+		err := c.ParseJson()
+		if err != nil {
+			return "", err
 		}
+		if v, has := c.JsonParam[key]; has {
+			return v, nil
+		} else {
+			return "", fmt.Errorf("not found:%s", key)
+		}
+	} else if strings.HasPrefix(contentType, "multipart/form-data") {
+		err := c.Ctx.Request.ParseMultipartForm(1 << 26)
+		if err != nil {
+			return "", err
+		}
+		if v := c.Param(key); v != "" {
+			return v, nil
+		}
+		return "", nil
 	} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
+		tBody, err := c.GetBody()
+		if err != nil {
+			return "", err
+		}
+		requestBody := bytes.TrimSpace(tBody)
 		if len(requestBody) != 0 {
 			u, err := url.ParseQuery(string(requestBody))
 			if err != nil {
