@@ -95,7 +95,6 @@ func (c *Controller) GetClaim(key string) interface{} {
 
 // ParseValid maps input data map to obj struct.include(form,json)
 func (c *Controller) ParseValid(obj interface{}, vs ...*validator.Validate) error {
-	var err error
 	contentType := c.GetHeader("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") ||
 		strings.HasPrefix(contentType, "application/*+json") {
@@ -121,23 +120,11 @@ func (c *Controller) ParseValid(obj interface{}, vs ...*validator.Validate) erro
 		if err != nil {
 			return err
 		}
-	} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
-		tBody, err := c.GetBody()
+	} else {
+		err := ParseForm(c.Input(), obj)
 		if err != nil {
 			return err
 		}
-		if len(tBody) != 0 {
-			u, err := url.ParseQuery(string(tBody))
-			if err != nil {
-				return err
-			}
-			err = ParseForm(u, obj)
-		}
-	} else {
-		err = ParseForm(c.Input(), obj)
-	}
-	if err != nil {
-		return err
 	}
 	if len(vs) > 0 {
 		for _, v := range vs {
