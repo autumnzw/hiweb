@@ -46,6 +46,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		if strings.ToLower(req.Method) != strings.ToLower(fms[0]) || fms[0] == "*" {
 			writer.WriteHeader(http.StatusNotFound)
 			fmt.Fprint(writer, "not found")
+			WebConfig.Logger.Error("%s not found route url:%s", req.Method, req.RequestURI)
 			return
 		}
 
