@@ -56,25 +56,26 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		}
 		context := WebContext{req, writer}
 		execController.Init(&context)
+		ct := execController.GetHeader("Content-Type")
 		if option.IsAuth {
 			if WebConfig.AuthHandler != nil {
 				if err := WebConfig.AuthHandler(context); err != nil {
 					writer.WriteHeader(http.StatusUnauthorized)
 					fmt.Fprint(writer, err.Error())
-					WebConfig.Logger.Error("no auth url:%s", req.RequestURI)
+					WebConfig.Logger.Error("%s no auth url:%s ct:%s", req.Method, req.RequestURI, ct)
 					return
 				}
 			} else {
 				if valid, err := execController.CheckAuth(); err != nil && !valid {
 					writer.WriteHeader(http.StatusUnauthorized)
 					fmt.Fprint(writer, err.Error())
-					WebConfig.Logger.Error("no auth url:%s", req.RequestURI)
+					WebConfig.Logger.Error("%s no auth url:%s ct:%s", req.Method, req.RequestURI, ct)
 					return
 				}
 			}
-			WebConfig.Logger.Info("auth url:%s ", req.RequestURI)
+			WebConfig.Logger.Info("%s auth url:%s ct:%s", req.Method, req.RequestURI, ct)
 		} else {
-			WebConfig.Logger.Info("url:%s ", req.RequestURI)
+			WebConfig.Logger.Info("%s url:%s ct:%s", req.Method, req.RequestURI, ct)
 		}
 
 		m := vc.MethodByName(funcMethod)
@@ -99,7 +100,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(writer, "参数错误")
-			WebConfig.Logger.Error("url:%s param err:%s", req.RequestURI, err)
+			WebConfig.Logger.Error("%s url:%s param err:%s", req.Method, req.RequestURI, err)
 			return
 		}
 		m.Call(parameters)

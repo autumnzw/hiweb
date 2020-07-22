@@ -24,6 +24,7 @@ type ControllerInterface interface {
 	CheckAuth() (bool, error)
 	Query(key string, def ...interface{}) (interface{}, error)
 	ParseValid(obj interface{}, vs ...*validator.Validate) error
+	GetHeader(key string) string
 }
 type Controller struct {
 	// context data
