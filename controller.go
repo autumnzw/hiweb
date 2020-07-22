@@ -98,8 +98,7 @@ func (c *Controller) ParseValid(obj interface{}, vs ...*validator.Validate) erro
 	var err error
 	contentType := c.GetHeader("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") ||
-		strings.HasPrefix(contentType, "application/*+json") ||
-		strings.HasPrefix(contentType, "multipart/form-data") {
+		strings.HasPrefix(contentType, "application/*+json") {
 		tBody, err := c.GetBody()
 		if err != nil {
 			return err
@@ -107,8 +106,20 @@ func (c *Controller) ParseValid(obj interface{}, vs ...*validator.Validate) erro
 		requestBody := bytes.TrimSpace(tBody)
 		if len(requestBody) != 0 && IsJSONBody(requestBody) {
 			err = json.Unmarshal(requestBody, obj)
+			if err != nil {
+				return err
+			}
 		} else {
-			err = ParseForm(c.Input(), obj)
+			return fmt.Errorf("input not json")
+		}
+	} else if strings.HasPrefix(contentType, "multipart/form-data") {
+		err := c.Ctx.Request.ParseMultipartForm(1 << 26)
+		if err != nil {
+			return err
+		}
+		err = ParseForm(c.Input(), obj)
+		if err != nil {
+			return err
 		}
 	} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
 		tBody, err := c.GetBody()
@@ -179,7 +190,8 @@ func (c *Controller) Query(key string, def ...interface{}) (interface{}, error) 
 	}
 
 	contentType := c.GetHeader("Content-Type")
-	if strings.HasPrefix(contentType, "application/json") {
+	if strings.HasPrefix(contentType, "application/json") ||
+		strings.HasPrefix(contentType, "application/*+json") {
 		err := c.ParseJson()
 		if err != nil {
 			return "", err
