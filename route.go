@@ -142,6 +142,10 @@ func genParameters(m reflect.Value, params []string, paramLen int, execControlle
 				parameters = append(parameters, reflect.ValueOf(paramVal))
 			case int64:
 				parameters = append(parameters, reflect.ValueOf(int(paramVal.(int64))))
+			case float32:
+				parameters = append(parameters, reflect.ValueOf(int(paramVal.(float32))))
+			case float64:
+				parameters = append(parameters, reflect.ValueOf(int(paramVal.(float64))))
 			case nil:
 				parameters = append(parameters, reflect.ValueOf(0))
 			}
