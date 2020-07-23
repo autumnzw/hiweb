@@ -255,7 +255,13 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 						},
 					}
 				}
-				parser.swagger.Paths[route][httpMethod] = sm
+				if httpMethod == "getpost" {
+					parser.swagger.Paths[route]["get"] = sm
+					parser.swagger.Paths[route]["post"] = sm
+				} else {
+					parser.swagger.Paths[route][httpMethod] = sm
+				}
+
 				parser.swagger.Components = cm
 			}
 

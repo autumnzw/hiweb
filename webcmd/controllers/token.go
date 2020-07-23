@@ -27,7 +27,7 @@ func (t *Token) GenToken(userIn UserCredentials) {
 
 }
 
-//@httpPost /Auth/Login
+//@httpGetPost /Auth/Login
 func (t *Token) Same(userIn UserCredentials) {
 
 }

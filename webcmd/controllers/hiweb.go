@@ -26,6 +26,47 @@ var doc = `{
     },
     "paths": {
         "/Auth/Login": {
+            "get": {
+                "tags": [
+                    "Token"
+                ],
+                "summary": "",
+                "requestBody": {
+                    "content": {
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "application/json-patch+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentials"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "Token"
@@ -278,7 +319,7 @@ func init() {
 
 	hiweb.Route("/Service/Auth/Login", &token, "", "post:GenToken", hiweb.RouteOption{IsAuth: false})
 
-	hiweb.Route("/Auth/Login", &token, "", "post:Same", hiweb.RouteOption{IsAuth: false})
+	hiweb.Route("/Auth/Login", &token, "", "*:Same", hiweb.RouteOption{IsAuth: false})
 
 	hiweb.Route("/Token/Upload", &token, "", "get:Upload", hiweb.RouteOption{IsAuth: false})
 

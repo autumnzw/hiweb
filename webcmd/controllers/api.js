@@ -79,11 +79,33 @@ function AuthLogin(username,password){
 	let tmpUrl = "/Auth/Login";
 
 	
+		
+		tmpUrl = BAPI.AppendParam(tmpUrl, 'username', username) 
+		
+		tmpUrl = BAPI.AppendParam(tmpUrl, 'password', password) 
+			
+		
+	
+	return BAPI.Xhr({
+		url: tmpUrl,
+		method: 'get',
+	
+	}).then((data) => {
+		return data
+	})
+
+}
+
+function AuthLogin(password,username){
+
+	let tmpUrl = "/Auth/Login";
+
+	
 		let inparam={
 		
-			"username":username,
-		
 			"password":password,
+		
+			"username":username,
 		
 		}
 		
@@ -125,6 +147,8 @@ export{ TokenLogin }
 export{ TokenGet }
 
 export{ ServiceAuth }
+
+export{ AuthLogin }
 
 export{ AuthLogin }
 
