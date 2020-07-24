@@ -148,6 +148,8 @@ func genParameters(m reflect.Value, params []string, paramLen int, execControlle
 				parameters = append(parameters, reflect.ValueOf(int(paramVal.(float64))))
 			case nil:
 				parameters = append(parameters, reflect.ValueOf(0))
+			default:
+				return parameters, fmt.Errorf("key:%s val:%v not supoort", param, paramVal)
 			}
 
 		case reflect.String:
