@@ -24,7 +24,6 @@ type ControllerInterface interface {
 	CheckAuth() (bool, error)
 	Query(key string, def ...interface{}) (interface{}, error)
 	ParseValid(obj interface{}, vs ...*validator.Validate) error
-	GetHeader(key string) string
 }
 type Controller struct {
 	// context data
@@ -34,9 +33,6 @@ type Controller struct {
 	JsonParam map[string]interface{}
 }
 
-func (c *Controller) GetHeader(key string) string {
-	return c.Ctx.Request.Header.Get(key)
-}
 func (c *Controller) SetHeader(key, val string) {
 	c.Ctx.ResponseWriter.Header().Set(key, val)
 }
@@ -95,7 +91,7 @@ func (c *Controller) GetClaim(key string) interface{} {
 
 // ParseValid maps input data map to obj struct.include(form,json)
 func (c *Controller) ParseValid(obj interface{}, vs ...*validator.Validate) error {
-	contentType := c.GetHeader("Content-Type")
+	contentType := c.Ctx.GetHeader("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") ||
 		strings.HasPrefix(contentType, "application/*+json") {
 		tBody, err := c.GetBody()
@@ -176,7 +172,7 @@ func (c *Controller) Query(key string, def ...interface{}) (interface{}, error) 
 		return def[0], nil
 	}
 
-	contentType := c.GetHeader("Content-Type")
+	contentType := c.Ctx.GetHeader("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") ||
 		strings.HasPrefix(contentType, "application/*+json") {
 		err := c.ParseJson()

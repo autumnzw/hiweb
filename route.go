@@ -57,7 +57,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		}
 		context := WebContext{req, writer}
 		execController.Init(&context)
-		ct := execController.GetHeader("Content-Type")
+		ct := context.GetHeader("Content-Type")
 		if option.IsAuth {
 			if WebConfig.AuthHandler != nil {
 				if err := WebConfig.AuthHandler(context); err != nil {
@@ -191,8 +191,9 @@ func genParameters(m reflect.Value, params []string, paramLen int, execControlle
 func RouteFiles(route, dir string) {
 	handler := http.FileServer(http.Dir(dir))
 	http.Handle(route, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		context := WebContext{r, w}
 		start := time.Now()
-		WebConfig.Logger.Info("Started %s %s ip:%s", r.Method, r.URL.Path, r.RemoteAddr)
+		WebConfig.Logger.Info("Started %s %s ip:%s", r.Method, r.URL.Path, context.GetRemoteAddr())
 		handler.ServeHTTP(w, r)
 		WebConfig.Logger.Info("Comleted %s in %v", r.URL.Path, time.Since(start))
 	}))
