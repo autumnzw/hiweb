@@ -60,7 +60,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		ct := context.GetHeader("Content-Type")
 		if option.IsAuth {
 			if WebConfig.AuthHandler != nil {
-				if err := WebConfig.AuthHandler(context); err != nil {
+				if err := WebConfig.AuthHandler(&context); err != nil {
 					writer.WriteHeader(http.StatusUnauthorized)
 					fmt.Fprint(writer, err.Error())
 					WebConfig.Logger.Error("%s no auth url:%s ct:%s", req.Method, req.RequestURI, ct)

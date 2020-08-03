@@ -4,7 +4,7 @@ type Config struct {
 	EnableGzip  bool
 	SecretKey   string
 	Logger      Logger
-	AuthHandler func(context WebContext) error
+	AuthHandler func(context *WebContext) error
 	paramMap    map[string]interface{}
 }
 
