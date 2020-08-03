@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,7 +28,6 @@ type Controller struct {
 	// context data
 	Ctx       *WebContext
 	Claims    jwt.MapClaims
-	Body      []byte
 	JsonParam map[string]interface{}
 }
 
@@ -38,14 +36,7 @@ func (c *Controller) SetHeader(key, val string) {
 }
 
 func (c *Controller) GetBody() ([]byte, error) {
-	if len(c.Body) == 0 {
-		body, err := ioutil.ReadAll(c.Ctx.Request.Body)
-		if err != nil {
-			return body, err
-		}
-		c.Body = body
-	}
-	return c.Body, nil
+	return c.Ctx.GetBody()
 }
 
 func (c *Controller) Input() url.Values {
