@@ -55,7 +55,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		if !ok {
 			panic("controller is not ControllerInterface")
 		}
-		context := WebContext{req, writer}
+		context := WebContext{req, writer, []byte{}}
 		execController.Init(&context)
 		ct := context.GetHeader("Content-Type")
 		if option.IsAuth {
@@ -193,7 +193,7 @@ func genParameters(m reflect.Value, params []string, paramLen int, execControlle
 func RouteFiles(route, dir string) {
 	handler := http.FileServer(http.Dir(dir))
 	http.Handle(route, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		context := WebContext{r, w}
+		context := WebContext{r, w, []byte{}}
 		start := time.Now()
 		WebConfig.Logger.Info("Started %s %s ip:%s", r.Method, r.URL.Path, context.GetRemoteAddr())
 		handler.ServeHTTP(w, r)
@@ -221,7 +221,7 @@ func Map(obj ControllerInterface) error {
 			if !ok {
 				panic("controller is not ControllerInterface")
 			}
-			context := WebContext{request, writer}
+			context := WebContext{request, writer, []byte{}}
 			execController.Init(&context)
 			vc.MethodByName(methodName).Call([]reflect.Value{})
 		})
@@ -256,7 +256,7 @@ func JwtMap(obj ControllerInterface) error {
 					if !ok {
 						panic("controller is not ControllerInterface")
 					}
-					context := WebContext{req, writer}
+					context := WebContext{req, writer, []byte{}}
 					execController.Init(&context)
 					vc.MethodByName(methodName).Call([]reflect.Value{})
 				} else {
