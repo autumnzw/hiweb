@@ -4,6 +4,7 @@ type Config struct {
 	EnableGzip  bool
 	SecretKey   string
 	Logger      Logger
+	FilterIpMap map[string]int
 	AuthHandler func(context WebContext) error
 	paramMap    map[string]interface{}
 }
@@ -15,6 +16,7 @@ func init() {
 	WebConfig.EnableGzip = true
 	WebConfig.Logger = &DefaultLogger{}
 	WebConfig.AuthHandler = nil
+	WebConfig.FilterIpMap = make(map[string]int)
 	WebConfig.paramMap = make(map[string]interface{})
 }
 
