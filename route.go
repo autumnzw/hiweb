@@ -49,7 +49,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 			writer.WriteHeader(http.StatusOK)
 			return
 		}
-		if strings.ToLower(req.Method) != strings.ToLower(fms[0]) || fms[0] == "*" {
+		if strings.ToLower(req.Method) != strings.ToLower(fms[0]) && fms[0] != "*" {
 			writer.WriteHeader(http.StatusNotFound)
 			fmt.Fprint(writer, "not found")
 			WebConfig.Logger.Error("%s not found route url:%s", req.Method, req.RequestURI)
@@ -61,12 +61,12 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		if !ok {
 			panic("controller is not ControllerInterface")
 		}
-		context := WebContext{req, writer}
+		context := WebContext{req, writer, []byte{}}
 		execController.Init(&context)
-		ct := execController.GetHeader("Content-Type")
+		ct := context.GetHeader("Content-Type")
 		if option.IsAuth {
 			if WebConfig.AuthHandler != nil {
-				if err := WebConfig.AuthHandler(context); err != nil {
+				if err := WebConfig.AuthHandler(&context); err != nil {
 					writer.WriteHeader(http.StatusUnauthorized)
 					fmt.Fprint(writer, err.Error())
 					WebConfig.Logger.Error("%s no auth url:%s ip:%s ct:%s", req.Method, req.RequestURI, req.RemoteAddr, ct)
@@ -148,8 +148,14 @@ func genParameters(m reflect.Value, params []string, paramLen int, execControlle
 				parameters = append(parameters, reflect.ValueOf(paramVal))
 			case int64:
 				parameters = append(parameters, reflect.ValueOf(int(paramVal.(int64))))
+			case float32:
+				parameters = append(parameters, reflect.ValueOf(int(paramVal.(float32))))
+			case float64:
+				parameters = append(parameters, reflect.ValueOf(int(paramVal.(float64))))
 			case nil:
 				parameters = append(parameters, reflect.ValueOf(0))
+			default:
+				return parameters, fmt.Errorf("key:%s val:%v not supoort", param, paramVal)
 			}
 
 		case reflect.String:
@@ -193,8 +199,9 @@ func genParameters(m reflect.Value, params []string, paramLen int, execControlle
 func RouteFiles(route, dir string) {
 	handler := http.FileServer(http.Dir(dir))
 	http.Handle(route, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		context := WebContext{r, w, []byte{}}
 		start := time.Now()
-		WebConfig.Logger.Info("Started %s %s ip:%s", r.Method, r.URL.Path, r.RemoteAddr)
+		WebConfig.Logger.Info("Started %s %s ip:%s", r.Method, r.URL.Path, context.GetRemoteAddr())
 		handler.ServeHTTP(w, r)
 		WebConfig.Logger.Info("Comleted %s in %v", r.URL.Path, time.Since(start))
 	}))
@@ -220,7 +227,7 @@ func Map(obj ControllerInterface) error {
 			if !ok {
 				panic("controller is not ControllerInterface")
 			}
-			context := WebContext{request, writer}
+			context := WebContext{request, writer, []byte{}}
 			execController.Init(&context)
 			vc.MethodByName(methodName).Call([]reflect.Value{})
 		})
@@ -255,7 +262,7 @@ func JwtMap(obj ControllerInterface) error {
 					if !ok {
 						panic("controller is not ControllerInterface")
 					}
-					context := WebContext{req, writer}
+					context := WebContext{req, writer, []byte{}}
 					execController.Init(&context)
 					vc.MethodByName(methodName).Call([]reflect.Value{})
 				} else {

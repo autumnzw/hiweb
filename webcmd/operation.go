@@ -79,6 +79,8 @@ func (operation *Operation) ParseComment(comment string, astFile *ast.File) erro
 		err = operation.ParseHttpGetComment(lineRemainder)
 	case "@httppost":
 		err = operation.ParseHttpPostComment(lineRemainder)
+	case "@httpgetpost":
+		err = operation.ParseHttpGetPostComment(lineRemainder)
 	case "@httpdelete":
 		err = operation.ParseHttpDeleteComment(lineRemainder)
 	case "@httpput":
@@ -398,6 +400,14 @@ func (operation *Operation) ParseHttpGetComment(commentLine string) error {
 
 func (operation *Operation) ParseHttpPostComment(commentLine string) error {
 	operation.HTTPMethod = "post"
+	if strings.HasPrefix(commentLine, "/") {
+		operation.Path = commentLine
+	}
+	return nil
+}
+
+func (operation *Operation) ParseHttpGetPostComment(commentLine string) error {
+	operation.HTTPMethod = "getpost"
 	if strings.HasPrefix(commentLine, "/") {
 		operation.Path = commentLine
 	}

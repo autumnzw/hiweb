@@ -260,39 +260,51 @@ func (g *Gen) writeGoDoc(output io.Writer, swaggerSpec *SwaggerSpec, config *Con
 		// mName := strings.TrimSpace(actions[1])
 		// cName := strings.TrimSpace(actions[0])
 		// lcName := firstLower(cName)
-		for tk, tv := range vs {
-			paramNames := make([]string, 0)
-			for _, p := range tv.Params {
-				paramNames = append(paramNames, p.Name)
+		tsm, hasGet := vs["get"]
+		_, hasPost := vs["post"]
+		httpMethod := ""
+		var sm SwaggerMethod
+		if hasGet && hasPost {
+			httpMethod = "*"
+			sm = tsm
+		} else {
+			for tk, tv := range vs {
+				httpMethod = tk
+				sm = tv
+				break
 			}
-			isAuth := false
-			if len(tv.Security) > 0 {
-				isAuth = true
-			}
-			cName := tv.Tags[0]
-			lcName := firstLower(cName)
-			route := k
-			if i := strings.Index(route, "{"); i > 0 {
-				route = route[:i]
-			}
-			// if len(actions) > 2 {
-			// 	route = fmt.Sprintf("/%s/%s/", actions[0], actions[1])
-			// } else {
-			// 	route = fmt.Sprintf("/%s/%s", actions[0], actions[1])
-			// }
-			var has bool
-			var outs OutClass
-			if outs, has = outMethodMap[cName]; !has {
-				outs = OutClass{Class: cName, LowerClass: lcName, OutMethods: make([]OutMethod, 0)}
-			}
-			outs.OutMethods = append(outs.OutMethods, OutMethod{
-				Route:     route,
-				Method:    tk + ":" + tv.ProMethodName,
-				ParamName: strings.Join(paramNames, ";"),
-				IsAuth:    isAuth,
-			})
-			outMethodMap[cName] = outs
 		}
+		paramNames := make([]string, 0)
+		for _, p := range sm.Params {
+			paramNames = append(paramNames, p.Name)
+		}
+		isAuth := false
+		if len(sm.Security) > 0 {
+			isAuth = true
+		}
+		cName := sm.Tags[0]
+		lcName := firstLower(cName)
+		route := k
+		if i := strings.Index(route, "{"); i > 0 {
+			route = route[:i]
+		}
+		// if len(actions) > 2 {
+		// 	route = fmt.Sprintf("/%s/%s/", actions[0], actions[1])
+		// } else {
+		// 	route = fmt.Sprintf("/%s/%s", actions[0], actions[1])
+		// }
+		var has bool
+		var outs OutClass
+		if outs, has = outMethodMap[cName]; !has {
+			outs = OutClass{Class: cName, LowerClass: lcName, OutMethods: make([]OutMethod, 0)}
+		}
+		outs.OutMethods = append(outs.OutMethods, OutMethod{
+			Route:     route,
+			Method:    httpMethod + ":" + sm.ProMethodName,
+			ParamName: strings.Join(paramNames, ";"),
+			IsAuth:    isAuth,
+		})
+		outMethodMap[cName] = outs
 	}
 	buffer := &bytes.Buffer{}
 	err = generator.Execute(buffer, struct {

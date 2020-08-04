@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,32 +23,20 @@ type ControllerInterface interface {
 	CheckAuth() (bool, error)
 	Query(key string, def ...interface{}) (interface{}, error)
 	ParseValid(obj interface{}, vs ...*validator.Validate) error
-	GetHeader(key string) string
 }
 type Controller struct {
 	// context data
 	Ctx       *WebContext
 	Claims    jwt.MapClaims
-	Body      []byte
 	JsonParam map[string]interface{}
 }
 
-func (c *Controller) GetHeader(key string) string {
-	return c.Ctx.Request.Header.Get(key)
-}
 func (c *Controller) SetHeader(key, val string) {
 	c.Ctx.ResponseWriter.Header().Set(key, val)
 }
 
 func (c *Controller) GetBody() ([]byte, error) {
-	if len(c.Body) == 0 {
-		body, err := ioutil.ReadAll(c.Ctx.Request.Body)
-		if err != nil {
-			return body, err
-		}
-		c.Body = body
-	}
-	return c.Body, nil
+	return c.Ctx.GetBody()
 }
 
 func (c *Controller) Input() url.Values {
@@ -95,7 +82,7 @@ func (c *Controller) GetClaim(key string) interface{} {
 
 // ParseValid maps input data map to obj struct.include(form,json)
 func (c *Controller) ParseValid(obj interface{}, vs ...*validator.Validate) error {
-	contentType := c.GetHeader("Content-Type")
+	contentType := c.Ctx.GetHeader("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") ||
 		strings.HasPrefix(contentType, "application/*+json") {
 		tBody, err := c.GetBody()
@@ -176,7 +163,7 @@ func (c *Controller) Query(key string, def ...interface{}) (interface{}, error) 
 		return def[0], nil
 	}
 
-	contentType := c.GetHeader("Content-Type")
+	contentType := c.Ctx.GetHeader("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") ||
 		strings.HasPrefix(contentType, "application/*+json") {
 		err := c.ParseJson()

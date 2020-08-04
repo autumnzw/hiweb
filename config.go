@@ -5,7 +5,7 @@ type Config struct {
 	SecretKey   string
 	Logger      Logger
 	FilterIpMap map[string]int
-	AuthHandler func(context WebContext) error
+	AuthHandler func(context *WebContext) error
 	paramMap    map[string]interface{}
 }
 
