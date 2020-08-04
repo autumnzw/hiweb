@@ -33,12 +33,7 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 				WebConfig.Logger.Error("recover err:%s stack:%s", e, debug.Stack())
 			}
 		}()
-		if _, ipHas := WebConfig.FilterIpMap[req.RemoteAddr]; ipHas {
-			writer.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(writer, "not found")
-			WebConfig.Logger.Error("filter ip:%s", req.RemoteAddr)
-			return
-		}
+
 		headers := writer.Header()
 		headers.Set("Access-Control-Allow-Origin", "*")
 		headers.Set("Access-Control-Allow-Headers", "*")
@@ -62,6 +57,15 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 			panic("controller is not ControllerInterface")
 		}
 		context := WebContext{req, writer, []byte{}}
+		remoteAddr := context.GetRemoteAddr()
+		if remoteAddr != "" && remoteAddr != "127.0.0.1" {
+			if _, ipHas := WebConfig.FilterIpMap[remoteAddr]; ipHas {
+				writer.WriteHeader(http.StatusNotFound)
+				fmt.Fprint(writer, "not found")
+				WebConfig.Logger.Error("filter ip:%s", remoteAddr)
+				return
+			}
+		}
 		execController.Init(&context)
 		ct := context.GetHeader("Content-Type")
 		if option.IsAuth {
@@ -69,20 +73,20 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 				if err := WebConfig.AuthHandler(&context); err != nil {
 					writer.WriteHeader(http.StatusUnauthorized)
 					fmt.Fprint(writer, err.Error())
-					WebConfig.Logger.Error("%s no auth url:%s ip:%s ct:%s", req.Method, req.RequestURI, req.RemoteAddr, ct)
+					WebConfig.Logger.Error("%s no auth url:%s ip:%s ct:%s", req.Method, req.RequestURI, remoteAddr, ct)
 					return
 				}
 			} else {
 				if valid, err := execController.CheckAuth(); err != nil && !valid {
 					writer.WriteHeader(http.StatusUnauthorized)
 					fmt.Fprint(writer, err.Error())
-					WebConfig.Logger.Error("%s no auth url:%s ip:%s ct:%s", req.Method, req.RequestURI, req.RemoteAddr, ct)
+					WebConfig.Logger.Error("%s no auth url:%s ip:%s ct:%s", req.Method, req.RequestURI, remoteAddr, ct)
 					return
 				}
 			}
-			WebConfig.Logger.Info("%s auth url:%s ip:%s ct:%s", req.Method, req.RequestURI, req.RemoteAddr, ct)
+			WebConfig.Logger.Info("%s auth url:%s ip:%s ct:%s", req.Method, req.RequestURI, remoteAddr, ct)
 		} else {
-			WebConfig.Logger.Info("%s url:%s ip:%s ct:%s", req.Method, req.RequestURI, req.RemoteAddr, ct)
+			WebConfig.Logger.Info("%s url:%s ip:%s ct:%s", req.Method, req.RequestURI, remoteAddr, ct)
 		}
 
 		m := vc.MethodByName(funcMethod)
