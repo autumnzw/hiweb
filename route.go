@@ -31,6 +31,8 @@ func Route(rootpath string, obj ControllerInterface, paramNames string, mappingM
 		defer func() {
 			if e := recover(); e != nil {
 				WebConfig.Logger.Error("recover err:%s stack:%s", e, debug.Stack())
+				writer.WriteHeader(http.StatusBadRequest)
+				fmt.Fprint(writer, "err param")
 			}
 		}()
 
