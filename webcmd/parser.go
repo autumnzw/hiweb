@@ -104,6 +104,9 @@ func getSwaggerSchema(typeName string) SwaggerSchema {
 	case "int":
 		ss.Type = "integer"
 		ss.Format = "int32"
+	case "float64", "float32":
+		ss.Type = "number"
+		ss.Format = "float"
 	case "file":
 		ss.Type = "file"
 	}
