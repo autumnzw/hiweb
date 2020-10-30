@@ -132,7 +132,11 @@ type SwaggerParameter struct {
 }
 
 type SwaggerSchema struct {
-	Type     string      `json:"type"`
+	Type  string `json:"type"`
+	Items struct {
+		Type   string `json:"type,omitempty"`
+		Format string `json:"format,omitempty"`
+	} `json:"items,omitempty"`
 	Format   string      `json:"format,omitempty"`
 	Default  interface{} `json:"default,omitempty"`
 	Nullable bool        `json:"nullable,omitempty"`

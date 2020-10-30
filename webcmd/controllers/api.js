@@ -96,16 +96,16 @@ function AuthLogin(username,password){
 
 }
 
-function AuthLogin(password,username){
+function AuthLogin(username,password){
 
 	let tmpUrl = "/Auth/Login";
 
 	
 		let inparam={
 		
-			"password":password,
-		
 			"username":username,
+		
+			"password":password,
 		
 		}
 		

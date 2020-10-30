@@ -165,7 +165,8 @@ var doc = `{
                         "description": "",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "items": {}
                         }
                     }
                 ],
@@ -239,6 +240,7 @@ var doc = `{
                                 "properties": {
                                     "file": {
                                         "type": "string",
+                                        "items": {},
                                         "format": "binary"
                                     }
                                 }
@@ -266,10 +268,14 @@ var doc = `{
                 "type": "object",
                 "properties": {
                     "password": {
-                        "type": "string"
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     },
                     "username": {
-                        "type": "string"
+                        "type": "string",
+                        "items": {}
                     }
                 },
                 "additionalProperties": false

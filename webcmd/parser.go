@@ -95,6 +95,39 @@ func (parser *Parser) ParseAPI(searchDir string) error {
 	return nil //parser.parseDefinitions()
 }
 
+func getSwaggerSchemaField(f *ast.Field) SwaggerSchema {
+	ss := SwaggerSchema{}
+	switch t := f.Type.(type) {
+	case *ast.ArrayType:
+		ss.Type = "array"
+		switch tt := t.Elt.(type) {
+		case *ast.Ident:
+			ss.Format = ""
+			switch tt.Name {
+			case "string":
+				ss.Items.Type = "string"
+			case "int":
+				ss.Items.Type = "integer"
+				ss.Items.Format = "int32"
+			case "file":
+				ss.Items.Type = "file"
+			}
+		}
+	case *ast.Ident:
+		ss.Format = ""
+		switch t.Name {
+		case "string":
+			ss.Type = t.Name
+		case "int":
+			ss.Type = "integer"
+			ss.Format = "int32"
+		case "file":
+			ss.Type = "file"
+		}
+	}
+	return ss
+}
+
 func getSwaggerSchema(typeName string) SwaggerSchema {
 	ss := SwaggerSchema{}
 	ss.Format = ""
@@ -222,7 +255,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 								if propName == "" {
 									propName = f.Names[0].Name
 								}
-								prop[propName] = getSwaggerSchema(f.Type.(*ast.Ident).Name)
+								prop[propName] = getSwaggerSchemaField(f)
 							}
 							cm.Schema[paramTypeName] = SwaggerComponentStruct{
 								Type:       "object",
