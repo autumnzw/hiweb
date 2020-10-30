@@ -273,6 +273,10 @@ var doc = `{
                             "type": "string"
                         }
                     },
+                    "test": {
+                        "type": "number",
+                        "format": "float"
+                    },
                     "username": {
                         "type": "string",
                         "items": {}
@@ -319,8 +323,6 @@ func init() {
 
 	token := Token{}
 
-	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
-
 	hiweb.Route("/Token/Get/", &token, "key", "get:Get", hiweb.RouteOption{IsAuth: false})
 
 	hiweb.Route("/Service/Auth/Login", &token, "", "post:GenToken", hiweb.RouteOption{IsAuth: false})
@@ -328,5 +330,7 @@ func init() {
 	hiweb.Route("/Auth/Login", &token, "", "*:Same", hiweb.RouteOption{IsAuth: false})
 
 	hiweb.Route("/Token/Upload", &token, "", "get:Upload", hiweb.RouteOption{IsAuth: false})
+
+	hiweb.Route("/Token/Login", &token, "", "post:Login", hiweb.RouteOption{IsAuth: false})
 
 }
